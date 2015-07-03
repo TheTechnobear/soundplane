@@ -654,6 +654,7 @@ void SoundplaneMIDIOutput::sendMIDIControllerMessages()
 	static const MLSymbol xSym("x");
 	static const MLSymbol ySym("y");
 	static const MLSymbol xySym("xy");
+    static const MLSymbol xyzSym("xyz");
 	static const MLSymbol zSym("z");
 	static const MLSymbol toggleSym("toggle");
 	static const MLSymbol nullSym("");
@@ -670,7 +671,7 @@ void SoundplaneMIDIOutput::sendMIDIControllerMessages()
 			int zoneChan = pMsg->mData[1];
 			int ctrlNum1 = pMsg->mData[2];
 			int ctrlNum2 = pMsg->mData[3];
-			// int ctrlNum3 = pMsg->mData[4];
+			int ctrlNum3 = pMsg->mData[4];
 			float x = pMsg->mData[5];
 			float y = pMsg->mData[6];
 			float z = pMsg->mData[7];
@@ -696,6 +697,12 @@ void SoundplaneMIDIOutput::sendMIDIControllerMessages()
 				mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(channel, ctrlNum1, ix));
 				mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(channel, ctrlNum2, iy));
 			}
+            else if (pMsg->mSubtype == xyzSym)
+            {
+                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(channel, ctrlNum1, ix));
+                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(channel, ctrlNum2, iy));
+                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(channel, ctrlNum3, iz));
+            }
 			else if (pMsg->mSubtype == zSym)
 			{
 				mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(channel, ctrlNum1, iz));
