@@ -214,9 +214,9 @@ void SoundplaneModel::doPropertyChangeAction(MLSymbol p, const MLProperty & newV
 			{
 				mTracker.setThresh(v);
 			}
-			else if (p == "z_max")
+			else if (p == "z_scale")
 			{
-				mTracker.setMaxForce(v);
+				mTracker.setZScale(v);
 			}
 			else if (p == "z_curve")
 			{
@@ -430,7 +430,7 @@ void SoundplaneModel::setAllPropertiesToDefaults()
 	setProperty("lopass", 100.);
 	
 	setProperty("z_thresh", 0.01);
-	setProperty("z_max", 0.05);
+	setProperty("z_scale", 1.);
 	setProperty("z_curve", 0.25);
 	setProperty("display_scale", 1.);
 	
@@ -536,7 +536,6 @@ void SoundplaneModel::didResolveAddress(NetService *pNetService)
 	static const char* kymaStr = "beslime";
 	int len = strlen(kymaStr);
 	bool isProbablyKyma = !strncmp(serviceName.c_str(), kymaStr, len);
-	debug() << "kyma mode " << isProbablyKyma << "\n";
 	setKymaMode(isProbablyKyma);
 }
 
@@ -575,7 +574,6 @@ void SoundplaneModel::initialize()
 	mMIDIOutput.initialize();
 	addListener(&mMIDIOutput);
 	
-	mOSCOutput.initialize();
 	addListener(&mOSCOutput);
 	
 	mpDriver = new SoundplaneDriver();
@@ -908,7 +906,7 @@ void SoundplaneModel::loadZonesFromString(const std::string& zoneStr)
             
             pz->mName = getJSONString(pNode, "name");
             pz->mStartNote = getJSONInt(pNode, "note");
-            pz->mChannel = getJSONInt(pNode, "channel");
+            pz->mOffset = getJSONInt(pNode, "offset");
             pz->mControllerNum1 = getJSONInt(pNode, "ctrl1");
             pz->mControllerNum2 = getJSONInt(pNode, "ctrl2");
             pz->mControllerNum3 = getJSONInt(pNode, "ctrl3");
@@ -979,10 +977,11 @@ void SoundplaneModel::sendParametersToZones()
 // send raw touches to zones in order to generate note and controller events.
 void SoundplaneModel::sendTouchDataToZones()
 {
+	const float kTouchScaleToModel = 20.f;
 	float x, y, z, dz;
 	int age;
     
-	const float zmax = getFloatProperty("z_max");
+	const float zscale = getFloatProperty("z_scale");
 	const float zcurve = getFloatProperty("z_curve");
 	const int maxTouches = getFloatProperty("max_touches");
 	const float hysteresis = getFloatProperty("hysteresis");
@@ -999,8 +998,8 @@ void SoundplaneModel::sendTouchDataToZones()
         dz = mTouchFrame(dzColumn, i);
 		if(age > 0)
 		{            
- 			// apply adjustable force curve for z over [z_thresh, z_max] and clamp
-			z /= zmax;
+ 			// apply adjustable force curve for z and clamp
+			z *= zscale * kTouchScaleToModel;
 			z = (1.f - zcurve)*z + zcurve*z*z*z;		
 			z = clamp(z, 0.f, 1.f);
 			mTouchFrame(zColumn, i) = z;
