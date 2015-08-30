@@ -46,8 +46,14 @@ public:
 	int mMIDIXCtrl;
 	int mMIDIYCtrl;
 	int mMIDIPressure;
-	int mMIDIChannel;
-	
+
+    int mMIDILowBend;
+    int mMIDILowXCtrl;
+    int mMIDILowYCtrl;
+    int mMIDILowPressure;
+
+    int mMIDIChannel;
+
 	bool mSendNoteOff;
 	bool mSendNoteOn;
 	bool mSendPressure;
@@ -83,7 +89,8 @@ enum MidiMode
     single_2,
     mpe,
     multi_1,
-    multi_2
+    multi_2,
+    mpe_ext
 };
 
 class SoundplaneMIDIOutput :
@@ -124,7 +131,7 @@ private:
 	int getMPEMainChannel();
 	int getMPEVoiceChannel(int voice);
 	int getVoiceChannel(int voice);
-	int getMIDIPitchBend(MIDIVoice* pVoice);
+	void getMIDIPitchBend(MIDIVoice* pVoice, int& bh, int& bl);
 	int getMIDIVelocity(MIDIVoice* pVoice);
 	int getRetriggerVelocity(MIDIVoice* pVoice);
 	int getMostRecentVoice();

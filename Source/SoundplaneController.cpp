@@ -218,6 +218,7 @@ void SoundplaneController::setupMenus()
     mMenuMap["midi_mode"]->addItem(MM_SINGLE_1);
     mMenuMap["midi_mode"]->addItem(MM_SINGLE_2);
     mMenuMap["midi_mode"]->addItem(MM_MPE);
+    mMenuMap["midi_mode"]->addItem(MM_MPE_EXT);
     mMenuMap["midi_mode"]->addItem(MM_MULTI_1);
     mMenuMap["midi_mode"]->addItem(MM_MULTI_2);
 }

@@ -383,6 +383,10 @@ void SoundplaneModel::doPropertyChangeAction(MLSymbol p, const MLProperty & newV
                 {
                     mMIDIOutput.setMode(MidiMode::mpe);
                 }
+                else if (str == MM_MPE_EXT)
+                {
+                    mMIDIOutput.setMode(MidiMode::mpe_ext);
+                }
                 else if (str == MM_MULTI_1)
                 {
                     mMIDIOutput.setMode(MidiMode::multi_1);

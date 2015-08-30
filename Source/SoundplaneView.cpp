@@ -503,7 +503,7 @@ void SoundplaneView::doPropertyChangeAction(MLSymbol p, const MLProperty & val)
 		const std::string& str = val.getStringValue();
 		if(mpMidiChannelDial)
 		{
-			if(str == MM_MPE) // MPE mode on
+			if(str == MM_MPE || str == MM_MPE_EXT) // MPE mode on
 			{
 				mpMidiChannelDial->setWidgetEnabled(false);	
 			}
