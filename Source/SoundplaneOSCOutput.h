@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include <memory>
+#include <stdint.h>
 
 #include "MLDebug.h"
 #include "MLTime.h"
@@ -29,7 +30,7 @@ const int kDefaultUDPPort = 3123;
 const int kNumUDPPorts = 16;
 
 // Soundplane app input port for Kyma and other config messages
-const int kDefaultUDPReceivePort = 3122;
+const int kDefaultUDPReceivePort = 3124;
 
 const int kUDPOutputBufferSize = 4096;
 
@@ -82,7 +83,6 @@ private:
 
 	int mMaxTouches;	
 	
-	//OSCVoice mOSCVoices[kSoundplaneMaxTouches];
 	std::vector< std::vector<OSCVoice> > mOSCVoices;
 	int mPortOffsetsByTouch[kSoundplaneMaxTouches];
 	int mPrevPortOffsetsByTouch[kSoundplaneMaxTouches];
@@ -90,8 +90,8 @@ private:
     SoundplaneDataMessage mMessagesByZone[kSoundplaneAMaxZones];
     
 	float mDataFreq;
-	UInt64 mCurrFrameStartTime;
-	UInt64 mLastFrameStartTime;
+	uint64_t mCurrFrameStartTime;
+	uint64_t mLastFrameStartTime;
     bool mTimeToSendNewFrame;
 
 	std::vector< std::vector < char > > mUDPBuffers;
@@ -103,7 +103,7 @@ private:
 	osc::int32 mFrameId;
 	int mSerialNumber;
 	
-	UInt64 lastInfrequentTaskTime;
+	uint64_t lastInfrequentTaskTime;
 	bool mKymaMode;
     bool mGotNoteChangesThisFrame;
     bool mGotMatrixThisFrame;

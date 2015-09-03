@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <memory>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "MLDebug.h"
@@ -163,13 +164,13 @@ private:
 	juce::MidiOutput* mpCurrentDevice;
 	
 	float mDataFreq;
-    UInt64 mCurrFrameStartTime;
-	UInt64 mLastFrameStartTime;
+    uint64_t mCurrFrameStartTime;
+	uint64_t mLastFrameStartTime;
     bool mTimeToSendNewFrame;
 	bool mGotControllerChanges;
     
 	bool mPressureActive;
-	UInt64 mLastTimeNRPNWasSent;
+	uint64_t mLastTimeNRPNWasSent;
 
 	int mBendRange;
 	int mTranspose;
@@ -185,7 +186,7 @@ private:
 	
 	bool mKymaPoll;
 	bool mVerbose;
-	UInt64 mLastTimeVerbosePrint;
+	uint64_t mLastTimeVerbosePrint;
 };
 
 

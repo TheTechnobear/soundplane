@@ -13,6 +13,7 @@
 #include "MLDebug.h"
 #include "MLAppState.h"
 #include "MLAppWindow.h"
+#include "modules/juce_gui_basics/keyboard/juce_ModifierKeys.h"
 
 class SoundplaneApp : 
 	public JUCEApplication

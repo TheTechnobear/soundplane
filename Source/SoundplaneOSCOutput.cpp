@@ -28,14 +28,13 @@ OSCVoice::~OSCVoice()
 SoundplaneOSCOutput::SoundplaneOSCOutput() :
 	mDataFreq(250.),
 	mLastFrameStartTime(0),
-//	mUDPSockets(0),
+	mCurrentBaseUDPPort(kDefaultUDPPort),
 	mFrameId(0),
 	mSerialNumber(0),
 	lastInfrequentTaskTime(0),
 	mKymaMode(false),
     mGotNoteChangesThisFrame(false),
-    mGotMatrixThisFrame(false),
-	mCurrentBaseUDPPort(kDefaultUDPPort)
+    mGotMatrixThisFrame(false)
 {
 	// create buffers for UDP packet streams
 	mUDPBuffers.resize(kNumUDPPorts);
@@ -198,9 +197,9 @@ void SoundplaneOSCOutput::processSoundplaneMessage(const SoundplaneDataMessage* 
     
     if(type == startFrameSym)
     {
-        const UInt64 dataPeriodMicrosecs = 1000*1000 / mDataFreq;
+        const uint64_t dataPeriodMicrosecs = 1000*1000 / mDataFreq;
         mCurrFrameStartTime = getMicroseconds();
-        if (mCurrFrameStartTime > mLastFrameStartTime + (UInt64)dataPeriodMicrosecs)
+        if (mCurrFrameStartTime > mLastFrameStartTime + (uint64_t)dataPeriodMicrosecs)
         {
             mLastFrameStartTime = mCurrFrameStartTime;
             mTimeToSendNewFrame = true;

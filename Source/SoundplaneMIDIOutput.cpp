@@ -82,18 +82,18 @@ juce::MidiOutput* MIDIDevice::getDevice()
 
 SoundplaneMIDIOutput::SoundplaneMIDIOutput() :
 	mpCurrentDevice(0),
-	mPressureActive(true),
 	mDataFreq(250.),
-	mLastTimeNRPNWasSent(0),
-	mLastTimeVerbosePrint(0),
 	mGotControllerChanges(false),
+	mPressureActive(false),
+	mLastTimeNRPNWasSent(0),
 	mBendRange(36),
 	mTranspose(0),
 	mHysteresis(0.5f),
 	mMPEChannels(0),
 	mChannel(1),
 	mKymaPoll(true),
-	mVerbose(false)
+	mVerbose(false),
+	mLastTimeVerbosePrint(0)
 {
 #ifdef DEBUG
 	//mVerbose = true;
@@ -381,9 +381,9 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
     if(type == startFrameSym)
     {
 		setupVoiceChannels();
-        const UInt64 dataPeriodMicrosecs = 1000*1000 / mDataFreq;		
+        const uint64_t dataPeriodMicrosecs = 1000*1000 / mDataFreq;		
         mCurrFrameStartTime = getMicroseconds();
-        if (mCurrFrameStartTime > mLastFrameStartTime + (UInt64)dataPeriodMicrosecs)
+        if (mCurrFrameStartTime > mLastFrameStartTime + (uint64_t)dataPeriodMicrosecs)
         {
             mLastFrameStartTime = mCurrFrameStartTime;
             mTimeToSendNewFrame = true;
@@ -583,6 +583,15 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
 	{
 		MIDIVoice* pVoice = &mMIDIVoices[i];
 		int chan = pVoice->mMIDIChannel;
+				
+		if(pVoice->mSendNoteOff)
+		{
+			mpCurrentDevice->sendMessageNow(juce::MidiMessage::noteOff(chan, pVoice->mPreviousMIDINote));
+            if(mMidiMode == mpe_ext) {
+                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(chan, 0, pVoice->mMIDILowPressure));
+            }
+            mpCurrentDevice->sendMessageNow(juce::MidiMessage::channelPressureChange(chan, 0));
+		}
 		
 		if(pVoice->mSendNoteOn)
 		{
@@ -591,7 +600,6 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
 		
         if(pVoice->mSendPitchBend)
         {
-            int p = pVoice->mMIDIBend;
             switch(mMidiMode)
             {
                 case single_1:
@@ -603,10 +611,8 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
                 case multi_2:
                 case multi_1:
                 default:
-                mpCurrentDevice->sendMessageNow(juce::MidiMessage::pitchWheel(chan, p));
                 break;
             }
-            
             mpCurrentDevice->sendMessageNow(juce::MidiMessage::pitchWheel(chan, pVoice->mMIDIBend));
         }
 
@@ -671,16 +677,6 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
                 default:
                     break;
             }
-
-		}
-
-		if(pVoice->mSendNoteOff)
-		{
-			mpCurrentDevice->sendMessageNow(juce::MidiMessage::noteOff(chan, pVoice->mPreviousMIDINote));
-            if(mMidiMode == mpe_ext) {
-                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(chan, 0, pVoice->mMIDILowPressure));
-            }
-            mpCurrentDevice->sendMessageNow(juce::MidiMessage::channelPressureChange(chan, 0));
 		}
 	}
 }
@@ -760,7 +756,7 @@ void SoundplaneMIDIOutput::sendMIDIControllerMessages()
 void SoundplaneMIDIOutput::pollKyma()
 {
 	// send NRPN with Soundplane identifier every few secs. for Kyma.
-	const UInt64 nrpnPeriodMicrosecs = 1000*1000*4;
+	const uint64_t nrpnPeriodMicrosecs = 1000*1000*4;
 	if (mCurrFrameStartTime > mLastTimeNRPNWasSent + nrpnPeriodMicrosecs)
 	{
 		mLastTimeNRPNWasSent = mCurrFrameStartTime;
@@ -849,7 +845,7 @@ void SoundplaneMIDIOutput::sendPitchbendRange()
 
 void SoundplaneMIDIOutput::dumpVoices()
 {
-	const UInt64 verbosePeriodMicrosecs = 1000*1000*1;
+	const uint64_t verbosePeriodMicrosecs = 1000*1000*1;
 	if (mCurrFrameStartTime > mLastTimeVerbosePrint + verbosePeriodMicrosecs)
 	{
 		// dump voices
