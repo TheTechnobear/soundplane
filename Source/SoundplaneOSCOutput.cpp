@@ -403,13 +403,16 @@ void SoundplaneOSCOutput::sendFrame()
 		{					
 			OSCVoice& v = mOSCVoices[portOffset][voiceIdx];
 			if (!mKymaMode)
-			{
-				osc::int32 touchID = voiceIdx + 1; // 1-based for OSC
-				
-				std::string address("/t3d/tch" + std::to_string(touchID));
-				p << osc::BeginMessage( address.c_str() );
-				p << v.x << v.y << v.z << v.note;
-				p << osc::EndMessage;						
+            {
+                if(v.mState != kVoiceStateInactive)
+                {
+                    osc::int32 touchID = voiceIdx + 1; // 1-based for OSC
+                    
+                    std::string address("/t3d/tch" + std::to_string(touchID));
+                    p << osc::BeginMessage( address.c_str() );
+                    p << v.x << v.y << v.z << v.note;
+                    p << osc::EndMessage;
+                }
 			}
 			else
 			{		
