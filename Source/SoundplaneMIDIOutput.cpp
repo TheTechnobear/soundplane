@@ -84,7 +84,7 @@ SoundplaneMIDIOutput::SoundplaneMIDIOutput() :
 	mpCurrentDevice(0),
 	mDataFreq(250.),
 	mGotControllerChanges(false),
-	mPressureActive(false),
+	mPressureActive(true),
 	mLastTimeNRPNWasSent(0),
 	mBendRange(36),
 	mTranspose(0),
