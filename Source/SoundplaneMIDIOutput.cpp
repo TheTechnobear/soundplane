@@ -280,7 +280,12 @@ int SoundplaneMIDIOutput::getMPEMainChannel()
 
 int SoundplaneMIDIOutput::getMPEVoiceChannel(int voice)
 {
-	return 2 + clamp(voice, 0, 14);
+    int baseChannel = mChannel;
+    if (mMidiMode==MidiMode::mpe || mMidiMode==MidiMode::mpe_ext)
+    {
+        baseChannel = 2;
+    }
+	return baseChannel + clamp(voice, 0, 14);
 }
 
 int SoundplaneMIDIOutput::getVoiceChannel(int v)
