@@ -421,7 +421,7 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
 		{
 			pVoice->startX = x;
 			pVoice->startY = y;
-			pVoice->startNote = note;
+			pVoice->startNote = clamp((int)lround(pVoice->note), 1, 127);
 			pVoice->mState = kVoiceStateOn;
 			pVoice->age = 1;
 
@@ -438,6 +438,36 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
 			pVoice->mMIDIVel = getMIDIVelocity(pVoice);
 			pVoice->mSendNoteOn = true;
 			
+            int bh,bl;
+            getMIDIPitchBend(pVoice,bh,bl);
+            if(bh != pVoice->mMIDIBend || (mMidiMode == mpe_ext &&bh != pVoice->mMIDILowBend))
+            {
+                pVoice->mMIDIBend = bh;
+                pVoice->mMIDILowBend = bl;
+                pVoice->mSendPitchBend = true;
+            }
+
+            float v;
+            v = pVoice->x*128.f;
+            int ix = clamp((int)(v), 0, 127);
+            int ixl = clamp((int)(((v - ix) * 128.f)), 0, 127);
+            if(ix != pVoice->mMIDIXCtrl  || (mMidiMode == mpe_ext &&ixl != pVoice->mMIDILowXCtrl))
+            {                    
+                pVoice->mMIDIXCtrl = ix;
+                pVoice->mMIDILowYCtrl = ixl;
+                pVoice->mSendXCtrl = true;
+            }
+            
+            v = pVoice->y*128.f;
+            int iy = clamp((int)(v), 0, 127);
+            int iyl = clamp((int)(((v - iy) * 128.f)), 0, 127);
+            if(iy != pVoice->mMIDIYCtrl || (mMidiMode == mpe_ext && iyl != pVoice->mMIDILowYCtrl))
+            {
+                pVoice->mMIDIYCtrl = iy;
+                pVoice->mMIDILowYCtrl = iyl;
+                pVoice->mSendYCtrl = true;
+            }
+
 			// send pressure right away at note on
 			if(mPressureActive)
 			{
@@ -486,7 +516,6 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
 			{
 				if(mTimeToSendNewFrame)
 				{
-                    float v;
                     int bh,bl;
 					getMIDIPitchBend(pVoice,bh,bl);
 					if(bh != pVoice->mMIDIBend || (mMidiMode == mpe_ext &&bh != pVoice->mMIDILowBend))
@@ -496,6 +525,7 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
 						pVoice->mSendPitchBend = true;
 					}
                     
+                    float v;
                     v = pVoice->x*128.f;
 					int ix = clamp((int)(v), 0, 127);
                     int ixl = clamp((int)(((v - ix) * 128.f)), 0, 127);
@@ -527,7 +557,8 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
             pVoice->z = 0;
 			
 			// send quantized pitch on note off
-			pVoice->note = (int)lround(pVoice->note);
+
+//			pVoice->note = (int)lround(pVoice->note);
             int bh,bl;
             getMIDIPitchBend(pVoice,bh,bl);
             if(bh != pVoice->mMIDIBend || (mMidiMode == mpe_ext &&bh != pVoice->mMIDILowBend))
@@ -536,6 +567,7 @@ void SoundplaneMIDIOutput::processSoundplaneMessage(const SoundplaneDataMessage*
                 pVoice->mMIDILowBend = bl;
                 pVoice->mSendPitchBend = true;
             }
+
 
 			
 			pVoice->mSendNoteOff = true;
@@ -589,26 +621,13 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
 		MIDIVoice* pVoice = &mMIDIVoices[i];
 		int chan = pVoice->mMIDIChannel;
 				
-		if(pVoice->mSendNoteOff)
-		{
-			mpCurrentDevice->sendMessageNow(juce::MidiMessage::noteOff(chan, pVoice->mPreviousMIDINote));
-            if(mMidiMode == mpe_ext) {
-                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(chan, 0, pVoice->mMIDILowPressure));
-            }
-            mpCurrentDevice->sendMessageNow(juce::MidiMessage::channelPressureChange(chan, 0));
-		}
-		
-		if(pVoice->mSendNoteOn)
-		{
-			mpCurrentDevice->sendMessageNow(juce::MidiMessage::noteOn(chan, pVoice->mMIDINote, (unsigned char)pVoice->mMIDIVel));
-		}
-		
         if(pVoice->mSendPitchBend)
         {
             switch(mMidiMode)
             {
                 case single_1:
                 case single_2:
+                break;
                 case mpe_ext:
                     mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(chan, 85, pVoice->mMIDILowBend));
                     // fall thru to send the high bit
@@ -620,7 +639,7 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
             }
             mpCurrentDevice->sendMessageNow(juce::MidiMessage::pitchWheel(chan, pVoice->mMIDIBend));
         }
-
+		
 		if(pVoice->mSendPressure)
 		{
 			int p = pVoice->mMIDIPressure;
@@ -682,6 +701,20 @@ void SoundplaneMIDIOutput::sendMIDIVoiceMessages()
                 default:
                     break;
             }
+		}
+
+		if(pVoice->mSendNoteOff)
+		{
+			mpCurrentDevice->sendMessageNow(juce::MidiMessage::noteOff(chan, pVoice->mPreviousMIDINote));
+            if(mMidiMode == mpe_ext) {
+                mpCurrentDevice->sendMessageNow(juce::MidiMessage::controllerEvent(chan, 86, 0));
+            }
+            mpCurrentDevice->sendMessageNow(juce::MidiMessage::channelPressureChange(chan, 0));
+		}
+		
+		if(pVoice->mSendNoteOn)
+		{
+			mpCurrentDevice->sendMessageNow(juce::MidiMessage::noteOn(chan, pVoice->mMIDINote, (unsigned char)pVoice->mMIDIVel));
 		}
 	}
 }
