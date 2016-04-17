@@ -4,6 +4,7 @@
 // Distributed under the MIT license: http://madrona-labs.mit-license.org/
 
 #include "SoundplaneModel.h"
+#include "SoundplaneModelA.h"
 
 #include "pa_memorybarrier.h"
 

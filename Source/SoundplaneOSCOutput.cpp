@@ -386,6 +386,8 @@ void SoundplaneOSCOutput::sendFrame()
 	// for each port, send an OSC bundle containing any touches.
 	for(int portOffset=0; portOffset<kNumUDPPorts; ++portOffset)
 	{
+        if(!mSocketInitialized[portOffset]) continue;
+        
 		// begin OSC bundle for this frame
 		// timestamp is now stored in the bundle, synchronizing all info for this frame.
 		osc::OutboundPacketStream& p = getPacketStreamForOffset(portOffset);					 
