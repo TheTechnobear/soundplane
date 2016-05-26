@@ -62,6 +62,8 @@ set(SP_SOURCES
   Source/TrackerCalibrateView.h
   Source/Zone.cpp
   Source/Zone.h
+  Source/RemoteControl.cpp
+  Source/RemoteControl.h
 )
 
 set(ICON_FULL_PATH "Data/soundplane.icns")

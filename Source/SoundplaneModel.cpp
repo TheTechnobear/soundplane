@@ -95,7 +95,9 @@ SoundplaneModel::SoundplaneModel() :
 	//mpUDPReceiveSocket(nullptr),
 	mTest(0),
 	mKymaIsConnected(0),
-	mTracker(kSoundplaneWidth, kSoundplaneHeight)
+	mTracker(kSoundplaneWidth, kSoundplaneHeight),
+
+    mRemoteControl(this)
 {
 	// setup geometry
 	mSurfaceWidthInv = 1.f / (float)mSurface.getWidth();
@@ -152,6 +154,7 @@ SoundplaneModel::SoundplaneModel() :
 	Browse(kLocalDotDomain, kUDPType);
 
 	startModelTimer();
+    mRemoteControl.Connect(8000, 8001);
 }
 
 SoundplaneModel::~SoundplaneModel()
@@ -423,6 +426,7 @@ void SoundplaneModel::doPropertyChangeAction(MLSymbol p, const MLProperty & newV
 		default:
 			break;
 	}
+    mRemoteControl.doPropertyChangeAction(p,newVal);
 }
 
 void SoundplaneModel::setAllPropertiesToDefaults()

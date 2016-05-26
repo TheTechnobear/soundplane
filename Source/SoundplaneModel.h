@@ -27,6 +27,8 @@
 #include "Zone.h"
 #include "SoundplaneBinaryData.h"
 
+#include "RemoteControl.h"
+
 
 #define MM_SINGLE_1 "single-pp"
 #define MM_SINGLE_2 "single-cp"
@@ -34,7 +36,6 @@
 #define MM_MULTI_1  "multi-73,74,11"
 #define MM_MULTI_2  "multi-pb,1,cp"
 #define MM_MPE_EXT  "mpe-ext"
-
 
 class SoundplaneModel :
 	public SoundplaneDriverListener,
@@ -269,6 +270,9 @@ private:
 
 	// OSC services
 	std::vector<std::string> mServiceNames;
+    
+    // RemoteControl
+    RemoteControl mRemoteControl;
 };
 
 // JSON utilities (to go where?)
